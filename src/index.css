@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-script: "Great Vibes", cursive;
+    --font-serif: "Cormorant Garamond", Georgia, serif;
+    --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #f5e0d9;
+    color: #4e4341;
+    overflow-x: hidden;
+  }
+}
+
+.font-script {
+  font-family: var(--font-script);
+}
+
+.font-serif-editorial {
+  font-family: var(--font-serif);
+}
+
+.font-sans-clean {
+  font-family: var(--font-sans);
+}
+
+@keyframes petal-drift {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  85% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(42px, 110vh, 0) rotate(260deg);
+    opacity: 0;
+  }
+}
+
+@keyframes seal-breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 10px 30px rgba(162, 97, 108, 0.28), 0 0 0 0 rgba(212, 148, 159, 0.35);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 14px 36px rgba(162, 97, 108, 0.35), 0 0 0 14px rgba(212, 148, 159, 0);
+  }
+}
+
+@keyframes soft-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-petal {
+  animation-name: petal-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.animate-seal-breathe {
+  animation: seal-breathe 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-soft-float {
+  animation: soft-float 3.2s ease-in-out infinite;
+}
+
+@keyframes hero-turn-360 {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes gentle-sway {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(1.2deg);
+  }
+}
+
+@keyframes pin-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  70% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.animate-hero-turn-360 {
+  animation: hero-turn-360 9.5s linear infinite;
+  will-change: transform;
+}
+
+.animate-gentle-sway {
+  animation: gentle-sway 5.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-pin-ring {
+  animation: pin-ring 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-petal,
+  .animate-seal-breathe,
+  .animate-soft-float,
+  .animate-hero-turn-360,
+  .animate-gentle-sway,
+  .animate-pin-ring {
+    animation: none !important;
+  }
+}
