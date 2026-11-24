@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Primitives
+    function isValidId(id) {
+      return id is string
+        && id.size() >= 1
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Bootstrapped Host/Admin (strictly requires verified email)
+    function isHost() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'kacheracheal152@gmail.com';
+    }
+
+    // 3. Entity Validation Blueprint: Rsvp
+    function isValidRsvp(data) {
+      return data.keys().hasAll([
+          'fullName',
+          'email',
+          'attending',
+          'guests',
+          'message',
+          'language',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'fullName',
+          'email',
+          'attending',
+          'guests',
+          'message',
+          'language',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.fullName is string
+        && data.fullName.size() >= 1
+        && data.fullName.size() <= 120
+        && data.email is string
+        && data.email.size() >= 3
+        && data.email.size() <= 160
+        && data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && data.attending is string
+        && data.attending in ['accept', 'decline']
+        && data.guests is int
+        && (
+          (data.attending == 'accept' && data.guests >= 1 && data.guests <= 4) ||
+          (data.attending == 'decline' && data.guests == 0)
+        )
+        && data.message is string
+        && data.message.size() <= 1000
+        && data.language is string
+        && data.language in ['en', 'fr']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // 4. Collection Rules: /rsvps/{rsvpId}
+    // Contains guest email (PII). Read/list/update/delete strictly restricted to verified host.
+    // Create is a strictly validated write-only dropbox so invited guests can RSVP without login friction.
+    match /rsvps/{rsvpId} {
+      allow get: if isHost() && isValidId(rsvpId);
+      allow list: if isHost();
+
+      allow create: if isValidId(rsvpId)
+        && isValidRsvp(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isHost()
+        && isValidId(rsvpId)
+        && isValidRsvp(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'fullName',
+          'email',
+          'attending',
+          'guests',
+          'message',
+          'language',
+          'updatedAt'
+        ]);
+
+      allow delete: if isHost() && isValidId(rsvpId);
+    }
+  }
+}

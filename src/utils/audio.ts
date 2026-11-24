@@ -1,105 +1,97 @@
 /**
- * Gentle procedural music-box / soft harp arpeggio synthesizer using Web Audio API.
- * Keeps background ambiance completely self-contained without fragile external MP3 URLs.
+ * Background graduation soundtrack player using the uploaded local audio track.
+ * Supports smooth fade-in / fade-out and seamless looping across the invitation.
  */
 
+const TRACK_SRC = '/assets/aistudio/Kanye_West_-_Good_Morning__Instrumental__b72015dd.mp3';
+const TARGET_VOLUME = 0.58;
+
 class AmbientMusicPlayer {
-  private ctx: AudioContext | null = null;
-  private masterGain: GainNode | null = null;
-  private timerId: number | null = null;
+  private audio: HTMLAudioElement | null = null;
+  private fadeTimer: number | null = null;
   private isPlaying = false;
-  private step = 0;
 
-  // Delicate F major / D minor classical arpeggio progression (Hz)
-  private readonly sequence: number[] = [
-    349.23, 440.0, 523.25, 659.25, 523.25, 440.0, // Fmaj7
-    293.66, 349.23, 440.0, 523.25, 440.0, 349.23, // Dm7
-    233.08, 293.66, 349.23, 440.0, 349.23, 293.66, // Bbmaj7
-    261.63, 329.63, 392.0, 523.25, 392.0, 329.63, // C
-  ];
+  private ensureAudio(): HTMLAudioElement {
+    if (!this.audio) {
+      const el = new Audio(TRACK_SRC);
+      el.loop = true;
+      el.preload = 'auto';
+      el.volume = 0;
+      this.audio = el;
+    }
+    return this.audio;
+  }
 
-  private playNote(freq: number) {
-    if (!this.ctx || !this.masterGain) return;
-    const now = this.ctx.currentTime;
+  private clearFade() {
+    if (this.fadeTimer !== null) {
+      window.clearInterval(this.fadeTimer);
+      this.fadeTimer = null;
+    }
+  }
 
-    const osc = this.ctx.createOscillator();
-    const overtone = this.ctx.createOscillator();
-    const noteGain = this.ctx.createGain();
-    const overtoneGain = this.ctx.createGain();
+  private fadeTo(target: number, durationMs: number, onComplete?: () => void) {
+    this.clearFade();
+    const audio = this.audio;
+    if (!audio) return;
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
+    const startVol = audio.volume;
+    const diff = target - startVol;
+    if (Math.abs(diff) < 0.005 || durationMs <= 0) {
+      audio.volume = Math.max(0, Math.min(1, target));
+      onComplete?.();
+      return;
+    }
 
-    overtone.type = 'triangle';
-    overtone.frequency.setValueAtTime(freq * 2, now);
+    const stepMs = 25;
+    const steps = Math.max(1, Math.round(durationMs / stepMs));
+    let currentStep = 0;
 
-    noteGain.gain.setValueAtTime(0.0001, now);
-    noteGain.gain.exponentialRampToValueAtTime(0.12, now + 0.03);
-    noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+    this.fadeTimer = window.setInterval(() => {
+      currentStep += 1;
+      const progress = Math.min(1, currentStep / steps);
+      const nextVol = startVol + diff * progress;
+      audio.volume = Math.max(0, Math.min(1, nextVol));
 
-    overtoneGain.gain.setValueAtTime(0.0001, now);
-    overtoneGain.gain.exponentialRampToValueAtTime(0.025, now + 0.02);
-    overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
-
-    osc.connect(noteGain);
-    overtone.connect(overtoneGain);
-    noteGain.connect(this.masterGain);
-    overtoneGain.connect(this.masterGain);
-
-    osc.start(now);
-    overtone.start(now);
-    osc.stop(now + 2.3);
-    overtone.stop(now + 1.2);
+      if (progress >= 1) {
+        this.clearFade();
+        onComplete?.();
+      }
+    }, stepMs);
   }
 
   public start(): boolean {
     if (this.isPlaying) return true;
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return false;
+      const audio = this.ensureAudio();
+      this.clearFade();
+      audio.volume = Math.min(audio.volume, 0.05);
 
-      if (!this.ctx) {
-        this.ctx = new AudioCtx();
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
-        this.masterGain.connect(this.ctx.destination);
-      }
-
-      if (this.ctx.state === 'suspended') {
-        void this.ctx.resume();
-      }
-
-      if (this.masterGain) {
-        this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime);
-        this.masterGain.gain.setTargetAtTime(0.28, this.ctx.currentTime, 0.35);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          this.isPlaying = false;
+        });
       }
 
       this.isPlaying = true;
-      this.playNote(this.sequence[this.step % this.sequence.length]);
-      this.step += 1;
-
-      this.timerId = window.setInterval(() => {
-        if (!this.isPlaying) return;
-        this.playNote(this.sequence[this.step % this.sequence.length]);
-        this.step += 1;
-      }, 620);
-
+      this.fadeTo(TARGET_VOLUME, 650);
       return true;
     } catch {
+      this.isPlaying = false;
       return false;
     }
   }
 
   public stop() {
     this.isPlaying = false;
-    if (this.timerId !== null) {
-      window.clearInterval(this.timerId);
-      this.timerId = null;
-    }
-    if (this.ctx && this.masterGain) {
-      this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime);
-      this.masterGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.15);
-    }
+    if (!this.audio) return;
+
+    const audio = this.audio;
+    this.fadeTo(0, 280, () => {
+      if (!this.isPlaying) {
+        audio.pause();
+      }
+    });
   }
 
   public toggle(): boolean {

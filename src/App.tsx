@@ -9,7 +9,7 @@ import {
   MapPin,
   Navigation,
   CalendarPlus,
-  Sparkles,
+  GraduationCap,
   Mail,
   Check,
   Gift,
@@ -21,9 +21,11 @@ import { HeroCelebration3D } from './components/HeroCelebration3D';
 import { CountdownTimer } from './components/CountdownTimer';
 import { RsvpSection } from './components/RsvpSection';
 import {
-  HeartMark,
+  GradCapMark,
+  LaurelMark,
+  TasselDotMark,
   TinyBowDivider,
-  RibbonHeartDivider,
+  GraduationRibbonDivider,
   RibbonBowCrest,
   FloralGarlandDivider,
   JourneyIllustration,
@@ -321,7 +323,7 @@ export default function App() {
                 {copy.invited.message}
               </motion.p>
 
-              {/* Open Diploma Envelope & Champagne Coupe Illustration with gentle sway */}
+              {/* Graduation Cap, Rolled Diploma & Toast Glasses Illustration with gentle sway */}
               <motion.div
                 initial={{ opacity: 0, y: 22, scale: 0.95 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -331,8 +333,8 @@ export default function App() {
               >
                 {!failedImages.diplomaGlasses ? (
                   <img
-                    src="/src/assets/images/diploma_envelope_glasses_1795412582743.jpg"
-                    alt="Vintage ink illustration of an ivory graduation envelope tied with a blush bow beside two rosé champagne coupe glasses"
+                    src="/src/assets/images/invited_grad_centerpiece_1795521906142.jpg"
+                    alt="Vintage ink and watercolor illustration of a graduation mortarboard cap with golden tassel beside a blush-ribboned rolled diploma, celebratory rosé glasses, and olive sprigs"
                     referrerPolicy="no-referrer"
                     onError={() => markImageFailed('diplomaGlasses')}
                     className="w-full h-auto object-contain mix-blend-multiply select-none animate-gentle-sway"
@@ -385,7 +387,7 @@ export default function App() {
                 transition={{ duration: 0.85, ease: EDITORIAL_EASE }}
                 className="mt-8"
               >
-                <RibbonHeartDivider />
+                <GraduationRibbonDivider />
               </motion.div>
             </section>
 
@@ -415,7 +417,7 @@ export default function App() {
                   {copy.journey.title}
                 </h2>
                 <div className="flex justify-center mt-3 mb-10">
-                  <HeartMark className="w-4 h-4" />
+                  <GradCapMark className="w-5 h-5" />
                 </div>
               </motion.div>
 
@@ -442,12 +444,10 @@ export default function App() {
                         whileInView={{ scale: 1, opacity: 1 }}
                         viewport={VIEWPORT_ONCE}
                         transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-                        className="absolute -left-[27px] sm:-left-[35px] top-1.5 w-3.5 h-3.5 flex items-center justify-center bg-[#FDFBF9]"
+                        className="absolute -left-[28px] sm:-left-[36px] top-1.5 w-4 h-4 flex items-center justify-center bg-[#FDFBF9]"
                         aria-hidden="true"
                       >
-                        <svg viewBox="0 0 16 16" className="w-2.5 h-2.5" fill="#C97080">
-                          <path d="M8 14S2 10.1 2 5.9C2 3.8 3.6 2.3 5.5 2.3C6.7 2.3 7.5 3 8 3.9C8.5 3 9.3 2.3 10.5 2.3C12.4 2.3 14 3.8 14 5.9C14 10.1 8 14 8 14Z" />
-                        </svg>
+                        <TasselDotMark className="w-3.5 h-3.5" />
                       </motion.span>
 
                       <motion.div
@@ -513,7 +513,7 @@ export default function App() {
                   {copy.program.subtitle}
                 </p>
                 <div className="flex justify-center mt-4 mb-10">
-                  <HeartMark className="w-4 h-4" />
+                  <LaurelMark className="w-8 h-4" />
                 </div>
               </motion.div>
 
@@ -545,7 +545,7 @@ export default function App() {
                           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#FDFBF9] p-1 z-10"
                           aria-hidden="true"
                         >
-                          <HeartMark className="w-3.5 h-3.5" />
+                          <GradCapMark className="w-4 h-4" />
                         </motion.span>
 
                         {textOnLeft ? (
@@ -695,7 +695,7 @@ export default function App() {
                     transition={{ type: 'spring', stiffness: 240, damping: 18, delay: 0.18 }}
                     className="mx-auto w-10 h-10 rounded-full bg-[#FBF0F2] flex items-center justify-center text-[#C86E7D]"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <GraduationCap className="w-4 h-4" />
                   </motion.div>
 
                   <h3 className="mt-3.5 font-serif-editorial text-2xl text-[#352E2D]">
@@ -763,7 +763,7 @@ export default function App() {
             </section>
 
             {/* =========================================================
-                6. DRESS CODE & DOVES CREST
+                6. DRESS CODE & GRADUATION CAP CREST
                ========================================================= */}
             <section className="px-6 sm:px-10 pt-10 pb-4 text-center">
               <motion.div
@@ -810,8 +810,8 @@ export default function App() {
               >
                 {!failedImages.dovesCrest ? (
                   <img
-                    src="/src/assets/images/doves_graduation_crest_1795412585734.jpg"
-                    alt="Vintage ink illustration of two white doves framed by olive branches and a blush silk ribbon bow"
+                    src="/src/assets/images/grad_cap_crest_1795517862760.jpg"
+                    alt="Vintage ink and watercolor illustration of a graduation mortarboard cap with a golden tassel framed by olive branches and a blush silk ribbon bow"
                     referrerPolicy="no-referrer"
                     onError={() => markImageFailed('dovesCrest')}
                     className="w-full h-auto object-contain mix-blend-multiply select-none animate-soft-float"
@@ -825,7 +825,7 @@ export default function App() {
             {/* =========================================================
                 7. BE OUR GUEST — RSVP
                ========================================================= */}
-            <RsvpSection copy={copy.rsvp} />
+            <RsvpSection copy={copy.rsvp} lang={lang} />
 
             {/* =========================================================
                 8. A QUIET LITTLE NOTE ON GIFTS (HIDDEN UNTIL CLICKED)
@@ -982,7 +982,7 @@ export default function App() {
                   transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.2 }}
                   className="flex justify-center my-4"
                 >
-                  <HeartMark className="w-3.5 h-3.5" />
+                  <LaurelMark className="w-8 h-4" />
                 </motion.div>
                 <p className="font-serif-editorial italic text-[16px] text-[#6D5F5D]">
                   {copy.footer.thankYou}

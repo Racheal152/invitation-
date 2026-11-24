@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "Rsvp": {
+      "title": "Rsvp",
+      "description": "A guest RSVP submission for Racheal Kache's December 4, 2026 graduation celebration.",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the responding guest.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Contact email address of the responding guest (PII, host-readable only).",
+          "minLength": 3,
+          "maxLength": 160,
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        },
+        "attending": {
+          "type": "string",
+          "description": "Whether the guest accepts or declines the invitation.",
+          "enum": ["accept", "decline"]
+        },
+        "guests": {
+          "type": "integer",
+          "description": "Number of guests attending (1 to 4 when accepting, 0 when declining)."
+        },
+        "message": {
+          "type": "string",
+          "description": "Optional congratulatory message or note for Racheal.",
+          "minLength": 0,
+          "maxLength": 1000
+        },
+        "language": {
+          "type": "string",
+          "description": "Language active when the guest submitted the RSVP.",
+          "enum": ["en", "fr"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the RSVP was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the RSVP was last updated."
+        }
+      },
+      "required": [
+        "fullName",
+        "email",
+        "attending",
+        "guests",
+        "message",
+        "language",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/rsvps/{rsvpId}": {
+      "schema": {
+        "$ref": "#/entities/Rsvp"
+      },
+      "description": "Collection of guest RSVP submissions. Public write-only dropbox for creating strictly validated RSVPs; read, list, update, and delete are restricted exclusively to the verified host (kacheracheal152@gmail.com)."
+    }
+  }
+}

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, CheckCircle2, RotateCcw } from 'lucide-react';
-import type { InvitationCopy } from '../data/invitationContent';
-import { HeartMark } from './BotanicalIllustrations';
+import { Send, CheckCircle2, RotateCcw, Loader2, Users } from 'lucide-react';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import type { InvitationCopy, Language } from '../data/invitationContent';
+import { GradCapMark } from './BotanicalIllustrations';
+import { HostRsvpModal } from './HostRsvpModal';
+import { db, handleFirestoreError, OperationType, RSVP_CONSTRAINTS } from '../firebase';
 
 interface RsvpRecord {
+  id: string;
   fullName: string;
   email: string;
   attending: 'accept' | 'decline';
@@ -15,18 +19,31 @@ interface RsvpRecord {
 
 const STORAGE_KEY = 'racheal_kache_graduation_2026_rsvp';
 
-interface RsvpSectionProps {
-  copy: InvitationCopy['rsvp'];
+function createValidRsvpDocId(): string {
+  const rand =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+      : Math.random().toString(36).slice(2, 14);
+  return `rsvp_${Date.now()}_${rand}`;
 }
 
-export function RsvpSection({ copy }: RsvpSectionProps) {
+interface RsvpSectionProps {
+  copy: InvitationCopy['rsvp'];
+  lang: Language;
+}
+
+export function RsvpSection({ copy, lang }: RsvpSectionProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [attending, setAttending] = useState<'accept' | 'decline' | ''>('');
   const [guests, setGuests] = useState<number>(1);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<RsvpRecord | null>(null);
+  const [hostModalOpen, setHostModalOpen] = useState(false);
+
+  const isFr = lang === 'fr';
 
   useEffect(() => {
     try {
@@ -37,7 +54,7 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
         setFullName(parsed.fullName);
         setEmail(parsed.email);
         setAttending(parsed.attending);
-        setGuests(parsed.guests);
+        setGuests(parsed.guests || 1);
         setMessage(parsed.message);
       }
     } catch {
@@ -45,33 +62,82 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedName = fullName.trim();
-    const trimmedEmail = email.trim();
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
+    if (isSubmitting) return;
 
-    if (!trimmedName || !emailValid || !attending) {
+    const trimmedName = fullName.trim().slice(0, RSVP_CONSTRAINTS.fullNameMax);
+    const trimmedEmail = email.trim().toLowerCase().slice(0, RSVP_CONSTRAINTS.emailMax);
+    const trimmedMessage = message.trim().slice(0, RSVP_CONSTRAINTS.messageMax);
+    const emailValid =
+      trimmedEmail.length >= RSVP_CONSTRAINTS.emailMin &&
+      RSVP_CONSTRAINTS.emailPattern.test(trimmedEmail);
+
+    if (
+      trimmedName.length < RSVP_CONSTRAINTS.fullNameMin ||
+      !emailValid ||
+      (attending !== 'accept' && attending !== 'decline')
+    ) {
       setError(copy.validationError);
       return;
     }
 
-    setError('');
-    const record: RsvpRecord = {
-      fullName: trimmedName,
-      email: trimmedEmail,
-      attending,
-      guests: attending === 'accept' ? guests : 0,
-      message: message.trim(),
-      submittedAt: new Date().toISOString(),
-    };
+    const safeGuests =
+      attending === 'accept'
+        ? Math.min(
+            RSVP_CONSTRAINTS.guestsMaxAccept,
+            Math.max(RSVP_CONSTRAINTS.guestsMinAccept, Math.round(guests))
+          )
+        : 0;
 
-    setSubmitted(record);
+    setError('');
+    setIsSubmitting(true);
+
+    const docId = createValidRsvpDocId();
+    const docPath = `rsvps/${docId}`;
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
-    } catch {
-      // Ignore storage availability issues
+      await setDoc(doc(db, 'rsvps', docId), {
+        fullName: trimmedName,
+        email: trimmedEmail,
+        attending,
+        guests: safeGuests,
+        message: trimmedMessage,
+        language: lang,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      const record: RsvpRecord = {
+        id: docId,
+        fullName: trimmedName,
+        email: trimmedEmail,
+        attending,
+        guests: safeGuests,
+        message: trimmedMessage,
+        submittedAt: new Date().toISOString(),
+      };
+
+      setSubmitted(record);
+
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
+      } catch {
+        // Ignore storage availability issues
+      }
+    } catch (err) {
+      setError(
+        isFr
+          ? 'Impossible d’enregistrer votre réponse pour le moment. Vérifiez votre connexion et réessayez.'
+          : 'We could not save your RSVP just now. Please check your connection and try again.'
+      );
+      try {
+        handleFirestoreError(err, OperationType.CREATE, docPath);
+      } catch {
+        // Structured Firestore error already logged for diagnostics
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -96,7 +162,7 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
           transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
           className="flex justify-center my-4"
         >
-          <HeartMark className="w-4 h-4" />
+          <GradCapMark className="w-5 h-5" />
         </motion.div>
         <p className="text-[13px] sm:text-sm text-[#6E6260] max-w-xs mx-auto leading-relaxed">
           {copy.deadline}
@@ -178,10 +244,12 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
                   id="rsvp-name"
                   type="text"
                   required
+                  maxLength={RSVP_CONSTRAINTS.fullNameMax}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder={copy.fullNamePlaceholder}
-                  className="w-full rounded-lg border border-[#EAE0DF] bg-white px-3.5 py-2.5 text-sm text-[#352E2D] placeholder:text-[#B5A9A7] focus:border-[#C96476] focus:outline-none focus:ring-2 focus:ring-[#C96476]/20 transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full rounded-lg border border-[#EAE0DF] bg-white px-3.5 py-2.5 text-sm text-[#352E2D] placeholder:text-[#B5A9A7] focus:border-[#C96476] focus:outline-none focus:ring-2 focus:ring-[#C96476]/20 transition-colors disabled:opacity-60"
                 />
               </div>
 
@@ -196,14 +264,16 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
                   id="rsvp-email"
                   type="email"
                   required
+                  maxLength={RSVP_CONSTRAINTS.emailMax}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={copy.emailPlaceholder}
-                  className="w-full rounded-lg border border-[#EAE0DF] bg-white px-3.5 py-2.5 text-sm text-[#352E2D] placeholder:text-[#B5A9A7] focus:border-[#C96476] focus:outline-none focus:ring-2 focus:ring-[#C96476]/20 transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full rounded-lg border border-[#EAE0DF] bg-white px-3.5 py-2.5 text-sm text-[#352E2D] placeholder:text-[#B5A9A7] focus:border-[#C96476] focus:outline-none focus:ring-2 focus:ring-[#C96476]/20 transition-colors disabled:opacity-60"
                 />
               </div>
 
-              <fieldset>
+              <fieldset disabled={isSubmitting}>
                 <legend className="block text-xs font-medium text-[#524644] mb-2.5">
                   {copy.attendingLabel}
                 </legend>
@@ -253,10 +323,11 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
                         <motion.button
                           key={count}
                           type="button"
+                          disabled={isSubmitting}
                           whileHover={{ y: -1 }}
                           whileTap={{ scale: 0.94 }}
                           onClick={() => setGuests(count)}
-                          className={`h-9 w-11 rounded-lg text-xs font-medium border transition-colors cursor-pointer tabular-nums ${
+                          className={`h-9 w-11 rounded-lg text-xs font-medium border transition-colors cursor-pointer tabular-nums disabled:opacity-60 ${
                             guests === count
                               ? 'bg-[#C96476] text-white border-[#C96476] shadow-sm'
                               : 'bg-white text-[#5C4E4C] border-[#E7DBDC] hover:border-[#C96476]'
@@ -271,19 +342,28 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
               </AnimatePresence>
 
               <div>
-                <label
-                  htmlFor="rsvp-message"
-                  className="block text-xs font-medium text-[#524644] mb-1.5"
-                >
-                  {copy.messageLabel}
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label
+                    htmlFor="rsvp-message"
+                    className="block text-xs font-medium text-[#524644]"
+                  >
+                    {copy.messageLabel}
+                  </label>
+                  {message.length > 750 && (
+                    <span className="text-[10.5px] text-[#9E8B89] tabular-nums">
+                      {message.length}/{RSVP_CONSTRAINTS.messageMax}
+                    </span>
+                  )}
+                </div>
                 <textarea
                   id="rsvp-message"
                   rows={3}
+                  maxLength={RSVP_CONSTRAINTS.messageMax}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={copy.messagePlaceholder}
-                  className="w-full rounded-lg border border-[#EAE0DF] bg-white px-3.5 py-2.5 text-sm text-[#352E2D] placeholder:text-[#B5A9A7] focus:border-[#C96476] focus:outline-none focus:ring-2 focus:ring-[#C96476]/20 transition-colors resize-none"
+                  disabled={isSubmitting}
+                  className="w-full rounded-lg border border-[#EAE0DF] bg-white px-3.5 py-2.5 text-sm text-[#352E2D] placeholder:text-[#B5A9A7] focus:border-[#C96476] focus:outline-none focus:ring-2 focus:ring-[#C96476]/20 transition-colors resize-none disabled:opacity-60"
                 />
               </div>
 
@@ -303,18 +383,46 @@ export function RsvpSection({ copy }: RsvpSectionProps) {
 
               <motion.button
                 type="submit"
-                whileHover={{ y: -1.5 }}
-                whileTap={{ scale: 0.985 }}
+                disabled={isSubmitting}
+                whileHover={isSubmitting ? undefined : { y: -1.5 }}
+                whileTap={isSubmitting ? undefined : { scale: 0.985 }}
                 transition={{ duration: 0.16 }}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#C96476] hover:bg-[#B85466] px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C96476] focus-visible:ring-offset-2"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#C96476] hover:bg-[#B85466] disabled:opacity-70 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C96476] focus-visible:ring-offset-2"
               >
-                <Send className="w-3.5 h-3.5" />
-                {copy.submitButton}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>{isFr ? 'Envoi en cours...' : 'Sending RSVP...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{copy.submitButton}</span>
+                  </>
+                )}
               </motion.button>
             </motion.form>
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Discreet host-only link to review saved RSVP responses */}
+      <div className="mt-4 flex justify-center">
+        <button
+          type="button"
+          onClick={() => setHostModalOpen(true)}
+          className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.18em] uppercase text-[#A99295] hover:text-[#C56375] transition-colors cursor-pointer py-1 px-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C96476]/40"
+        >
+          <Users className="w-3 h-3" />
+          <span>{isFr ? 'Liste des Invités (Hôte)' : 'Host Guest List'}</span>
+        </button>
+      </div>
+
+      <HostRsvpModal
+        open={hostModalOpen}
+        onClose={() => setHostModalOpen(false)}
+        lang={lang}
+      />
     </section>
   );
 }
