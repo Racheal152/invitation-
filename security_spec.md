@@ -11,7 +11,7 @@
    - `attending`: `'accept'` or `'decline'`
    - `guests`: integer, `1 <= guests <= 4` when `attending == 'accept'`, strictly `0` when `attending == 'decline'`
    - `message`: string, `size <= 1000`
-   - `language`: `'en'` or `'fr'`
+   - `language`: `'en'` or `'sw'`
 5. **Temporal Integrity & Immutability**:
    - On `create`: `createdAt == request.time` and `updatedAt == request.time`
    - On `update` (host-only): `createdAt == existing().createdAt` (immutable) and `updatedAt == request.time`

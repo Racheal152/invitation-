@@ -119,7 +119,7 @@ export default function App() {
   };
 
   const handleToggleLanguage = () => {
-    setLang((prev) => (prev === 'en' ? 'fr' : 'en'));
+    setLang((prev) => (prev === 'en' ? 'sw' : 'en'));
   };
 
   const handleScrollToRsvp = () => {
@@ -214,12 +214,12 @@ export default function App() {
                 whileHover={{ y: -1, scale: 1.03 }}
                 whileTap={{ scale: 0.96 }}
                 aria-label={
-                  lang === 'en' ? 'Switch invitation to French' : 'Switch invitation to English'
+                  lang === 'en' ? 'Switch invitation to Swahili' : 'Switch invitation to English'
                 }
                 className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#EDE0E2] px-3.5 py-1.5 text-[11px] font-medium tracking-wider text-[#5A4D4B] shadow-sm hover:border-[#D497A3] hover:text-[#B95768] transition-colors cursor-pointer whitespace-nowrap"
               >
                 <Globe className="w-3.5 h-3.5 text-[#8A7578]" />
-                <span>{lang === 'en' ? 'FR' : 'EN'}</span>
+                <span>{lang === 'en' ? 'SW' : 'EN'}</span>
               </motion.button>
             </div>
 

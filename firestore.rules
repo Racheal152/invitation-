@@ -73,7 +73,7 @@ service cloud.firestore {
         && data.message is string
         && data.message.size() <= 1000
         && data.language is string
-        && data.language in ['en', 'fr']
+        && data.language in ['en', 'sw']
         && data.createdAt is timestamp
         && data.updatedAt is timestamp;
     }

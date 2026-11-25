@@ -37,7 +37,7 @@
         "language": {
           "type": "string",
           "description": "Language active when the guest submitted the RSVP.",
-          "enum": ["en", "fr"]
+          "enum": ["en", "sw"]
         },
         "createdAt": {
           "type": "string",

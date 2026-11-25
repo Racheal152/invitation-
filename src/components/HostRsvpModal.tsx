@@ -56,7 +56,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const isFr = lang === 'fr';
+  const isSw = lang === 'sw';
 
   const isVerifiedHost = Boolean(
     user &&
@@ -107,8 +107,8 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
       (error) => {
         setLoadingList(false);
         setListError(
-          isFr
-            ? 'Impossible de charger la liste des réponses.'
+          isSw
+            ? 'Imeshindikana kupakia orodha ya majibu kwa sasa.'
             : 'Unable to load RSVP responses right now.'
         );
         try {
@@ -120,7 +120,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
     );
 
     return () => unsubscribe();
-  }, [open, authReady, isVerifiedHost, isFr]);
+  }, [open, authReady, isVerifiedHost, isSw]);
 
   // Close on Escape
   useEffect(() => {
@@ -141,8 +141,8 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
       const code = (error as { code?: string })?.code;
       if (code !== 'auth/popup-closed-by-user') {
         setAuthError(
-          isFr
-            ? 'La connexion Google a échoué. Veuillez réessayer.'
+          isSw
+            ? 'Imeshindikana kuingia kupitia Google. Tafadhali jaribu tena.'
             : 'Google sign-in could not be completed. Please try again.'
         );
       }
@@ -168,7 +168,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
       setConfirmDeleteId(null);
     } catch (error) {
       setListError(
-        isFr ? 'Impossible de supprimer cette réponse.' : 'Could not delete that response.'
+        isSw ? 'Imeshindikana kufuta jibu hilo.' : 'Could not delete that response.'
       );
       try {
         handleFirestoreError(error, OperationType.DELETE, path);
@@ -224,9 +224,9 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
   }, [rsvps, filter]);
 
   const formatDate = (ts?: Timestamp | null) => {
-    if (!ts) return isFr ? 'À l’instant' : 'Just now';
+    if (!ts) return isSw ? 'Sasa hivi' : 'Just now';
     try {
-      return ts.toDate().toLocaleDateString(isFr ? 'fr-FR' : 'en-GB', {
+      return ts.toDate().toLocaleDateString(isSw ? 'sw-KE' : 'en-GB', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -250,7 +250,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
           className="fixed inset-0 z-50 bg-[#2F2426]/45 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6"
           role="dialog"
           aria-modal="true"
-          aria-label={isFr ? 'Liste des réponses RSVP' : 'Host RSVP Guest List'}
+          aria-label={isSw ? 'Orodha ya Majibu ya RSVP' : 'Host RSVP Guest List'}
         >
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
@@ -264,10 +264,10 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
             <div className="px-6 py-4 border-b border-[#F0E3E5] flex items-center justify-between gap-3 bg-[#FAF5F6]/70">
               <div>
                 <p className="text-[10px] tracking-[0.26em] uppercase text-[#C47483]">
-                  {isFr ? 'ESPACE HÔTE · RACHEAL KACHE' : 'HOST VIEW · RACHEAL KACHE'}
+                  {isSw ? 'UKURASA WA MWENYEJI · RACHEAL KACHE' : 'HOST VIEW · RACHEAL KACHE'}
                 </p>
                 <h3 className="font-serif-editorial text-xl sm:text-2xl text-[#352E2D]">
-                  {isFr ? 'Réponses & Vœux RSVP' : 'Guest RSVP List & Wishes'}
+                  {isSw ? 'Orodha ya Wageni na Salamu' : 'Guest RSVP List & Wishes'}
                 </h3>
               </div>
               <div className="flex items-center gap-1.5">
@@ -275,19 +275,19 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    title={isFr ? 'Se déconnecter' : 'Sign out'}
+                    title={isSw ? 'Ondoka' : 'Sign out'}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-[#EAD7DB] bg-white px-2.5 py-1.5 text-[11px] text-[#7A6367] hover:text-[#B85063] hover:border-[#C96476] transition-colors cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">
-                      {isFr ? 'Déconnexion' : 'Sign out'}
+                      {isSw ? 'Ondoka' : 'Sign out'}
                     </span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label={isFr ? 'Fermer' : 'Close'}
+                  aria-label={isSw ? 'Funga' : 'Close'}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8B767A] hover:text-[#352E2D] hover:bg-[#F3E6E9] transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
@@ -307,11 +307,11 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                     <Lock className="w-5 h-5" />
                   </div>
                   <h4 className="mt-4 font-serif-editorial text-xl text-[#352E2D]">
-                    {isFr ? 'Accès Privé de l’Hôte' : 'Private Host Access'}
+                    {isSw ? 'Ufikiaji Binafsi wa Mwenyeji' : 'Private Host Access'}
                   </h4>
                   <p className="mt-2 text-xs sm:text-[13px] text-[#6E615F] leading-relaxed">
-                    {isFr
-                      ? `Connectez-vous avec le compte Google de Racheal (${HOST_EMAIL}) pour consulter les réponses RSVP, le nombre d’invités et les messages.`
+                    {isSw
+                      ? `Ingia kwa akaunti ya Google ya Racheal (${HOST_EMAIL}) ili kutazama majibu ya RSVP, idadi ya wageni, na salamu za pongezi.`
                       : `Sign in with Racheal's Google account (${HOST_EMAIL}) to view live guest RSVPs, headcounts, and congratulatory wishes.`}
                   </p>
                   {authError && (
@@ -329,7 +329,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                       <Users className="w-3.5 h-3.5" />
                     )}
                     <span>
-                      {isFr ? 'Connexion Google (Hôte)' : 'Sign in with Google'}
+                      {isSw ? 'Ingia kwa Google (Mwenyeji)' : 'Sign in with Google'}
                     </span>
                   </button>
                 </div>
@@ -339,11 +339,11 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                     <Lock className="w-5 h-5" />
                   </div>
                   <h4 className="mt-4 font-serif-editorial text-xl text-[#352E2D]">
-                    {isFr ? 'Accès Réservé à Racheal' : 'Restricted to Host Account'}
+                    {isSw ? 'Kwa Akaunti ya Mwenyeji Pekee' : 'Restricted to Host Account'}
                   </h4>
                   <p className="mt-2 text-xs sm:text-[13px] text-[#6E615F] leading-relaxed">
-                    {isFr
-                      ? `Vous êtes connecté en tant que ${user.email}. Pour protéger la confidentialité des invités, seule ${HOST_EMAIL} peut consulter la liste complète.`
+                    {isSw
+                      ? `Umeingia kama ${user.email}. Ili kulinda faragha ya wageni, ni ${HOST_EMAIL} pekee anayeweza kuona orodha kamili ya RSVP.`
                       : `Signed in as ${user.email}. To protect guest privacy, only ${HOST_EMAIL} can view the full RSVP list.`}
                   </p>
                   <button
@@ -352,7 +352,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                     className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg border border-[#E5CCD1] bg-white px-4 py-2 text-xs font-medium text-[#6C5458] hover:border-[#C96476] hover:text-[#B85063] transition-colors cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>{isFr ? 'Changer de compte' : 'Switch Account'}</span>
+                    <span>{isSw ? 'Badili Akaunti' : 'Switch Account'}</span>
                   </button>
                 </div>
               ) : (
@@ -361,7 +361,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                   <div className="grid grid-cols-3 gap-2.5">
                     <div className="rounded-xl bg-[#FAF6F4] border border-[#F0E3E4] p-3.5 text-center">
                       <p className="text-[10px] tracking-[0.2em] uppercase text-[#9A8588]">
-                        {isFr ? 'Invités' : 'Headcount'}
+                        {isSw ? 'Wageni' : 'Headcount'}
                       </p>
                       <p className="mt-1 font-serif-editorial text-2xl sm:text-3xl text-[#C56375] tabular-nums">
                         {stats.totalGuests}
@@ -369,7 +369,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                     </div>
                     <div className="rounded-xl bg-[#FAF6F4] border border-[#F0E3E4] p-3.5 text-center">
                       <p className="text-[10px] tracking-[0.2em] uppercase text-[#9A8588]">
-                        {isFr ? 'Présents' : 'Accepted'}
+                        {isSw ? 'Watakuja' : 'Accepted'}
                       </p>
                       <p className="mt-1 font-serif-editorial text-2xl sm:text-3xl text-[#352E2D] tabular-nums">
                         {stats.acceptingCount}
@@ -377,7 +377,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                     </div>
                     <div className="rounded-xl bg-[#FAF6F4] border border-[#F0E3E4] p-3.5 text-center">
                       <p className="text-[10px] tracking-[0.2em] uppercase text-[#9A8588]">
-                        {isFr ? 'Absents' : 'Declined'}
+                        {isSw ? 'Hawatakuja' : 'Declined'}
                       </p>
                       <p className="mt-1 font-serif-editorial text-2xl sm:text-3xl text-[#7D6C6A] tabular-nums">
                         {stats.decliningCount}
@@ -390,9 +390,9 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                     <div className="flex items-center gap-4 text-xs">
                       {(
                         [
-                          ['all', isFr ? `Tous (${stats.totalResponses})` : `All (${stats.totalResponses})`],
-                          ['accept', isFr ? `Présents (${stats.acceptingCount})` : `Attending (${stats.acceptingCount})`],
-                          ['decline', isFr ? `Absents (${stats.decliningCount})` : `Declined (${stats.decliningCount})`],
+                          ['all', isSw ? `Wote (${stats.totalResponses})` : `All (${stats.totalResponses})`],
+                          ['accept', isSw ? `Watakuja (${stats.acceptingCount})` : `Attending (${stats.acceptingCount})`],
+                          ['decline', isSw ? `Hawatakuja (${stats.decliningCount})` : `Declined (${stats.decliningCount})`],
                         ] as const
                       ).map(([tab, label]) => (
                         <button
@@ -417,7 +417,7 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                         className="inline-flex items-center gap-1.5 text-xs text-[#C56375] hover:text-[#A9495B] font-medium transition-colors cursor-pointer"
                       >
                         <Download className="w-3.5 h-3.5" />
-                        <span>{isFr ? 'Exporter CSV' : 'Export CSV'}</span>
+                        <span>{isSw ? 'Pakua CSV' : 'Export CSV'}</span>
                       </button>
                     )}
                   </div>
@@ -433,8 +433,8 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                   ) : filtered.length === 0 ? (
                     <div className="py-10 text-center">
                       <p className="font-serif-editorial italic text-base text-[#7E6D6B]">
-                        {isFr
-                          ? 'Aucune réponse RSVP enregistrée pour le moment.'
+                        {isSw
+                          ? 'Bado hakuna majibu ya RSVP — wageni wakijibu, yataonekana hapa moja kwa moja.'
                           : 'No RSVP responses yet — as guests reply, they will appear here live.'}
                       </p>
                     </div>
@@ -454,14 +454,14 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                                 {item.attending === 'accept' ? (
                                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#4D7A58]">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
-                                    {isFr
-                                      ? `${item.guests} convive${item.guests > 1 ? 's' : ''}`
+                                    {isSw
+                                      ? `${item.guests === 1 ? 'Mgeni 1' : `Wageni ${item.guests}`}`
                                       : `${item.guests} ${item.guests === 1 ? 'guest' : 'guests'}`}
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9A7A7F]">
                                     <XCircle className="w-3.5 h-3.5" />
-                                    {isFr ? 'Absent(e)' : 'Declined'}
+                                    {isSw ? 'Hatahudhuria' : 'Declined'}
                                   </span>
                                 )}
                               </div>
@@ -488,8 +488,8 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                                   >
                                     {deletingId === item.id
                                       ? '...'
-                                      : isFr
-                                        ? 'Oui'
+                                      : isSw
+                                        ? 'Futa'
                                         : 'Delete'}
                                   </button>
                                   <button
@@ -497,14 +497,14 @@ export function HostRsvpModal({ open, onClose, lang }: HostRsvpModalProps) {
                                     onClick={() => setConfirmDeleteId(null)}
                                     className="px-1.5 py-0.5 rounded border border-[#E5D5D7] text-[10px] text-[#6E6062] cursor-pointer"
                                   >
-                                    {isFr ? 'Non' : 'Cancel'}
+                                    {isSw ? 'Ghairi' : 'Cancel'}
                                   </button>
                                 </div>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => setConfirmDeleteId(item.id)}
-                                  aria-label={isFr ? 'Supprimer' : 'Remove entry'}
+                                  aria-label={isSw ? 'Futa' : 'Remove entry'}
                                   className="p-1 rounded text-[#B39CA0] hover:text-[#B3394D] transition-colors cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />

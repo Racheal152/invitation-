@@ -217,8 +217,8 @@ export function HeroTurntable360({ active, lang = 'en' }: HeroTurntable360Props)
   }, []);
 
   const altText =
-    lang === 'fr'
-      ? 'Illustration fine de Racheal Kache diplômée 2026 tenant son diplôme en rotation fluide à 360 degrés'
+    lang === 'sw'
+      ? 'Mchoro maridadi wa Racheal Kache Darasa la 2026 akiwa ameshika shahada yake akizunguka kwa upole'
       : 'Fine-line graduation fashion illustration of Racheal Kache Class of 2026 holding her rolled degree in smooth 360-degree rotation';
 
   return (

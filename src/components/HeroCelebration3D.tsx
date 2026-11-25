@@ -86,8 +86,8 @@ export function HeroCelebration3D({ active, lang = 'en' }: HeroCelebration3DProp
   const activeLiftY = reducedMotion ? 0 : POSE_FRAMES[activeFrameIndex].liftY;
 
   const altText =
-    lang === 'fr'
-      ? 'Illustration animée de Racheal Kache diplômée 2026 souriant et levant les mains avec son diplôme'
+    lang === 'sw'
+      ? 'Mchoro wenye uhuishaji wa Racheal Kache Darasa la 2026 akitabasamu na kuinua mikono akiwa na shahada yake'
       : 'Animated illustration of Racheal Kache Class of 2026 smiling warmly and raising her hands with her rolled degree';
 
   return (

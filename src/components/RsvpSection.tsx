@@ -43,7 +43,7 @@ export function RsvpSection({ copy, lang }: RsvpSectionProps) {
   const [submitted, setSubmitted] = useState<RsvpRecord | null>(null);
   const [hostModalOpen, setHostModalOpen] = useState(false);
 
-  const isFr = lang === 'fr';
+  const isSw = lang === 'sw';
 
   useEffect(() => {
     try {
@@ -127,8 +127,8 @@ export function RsvpSection({ copy, lang }: RsvpSectionProps) {
       }
     } catch (err) {
       setError(
-        isFr
-          ? 'Impossible d’enregistrer votre réponse pour le moment. Vérifiez votre connexion et réessayez.'
+        isSw
+          ? 'Hatukuweza kuhifadhi jibu lako kwa sasa. Tafadhali hakikisha una mtandao kisha ujaribu tena.'
           : 'We could not save your RSVP just now. Please check your connection and try again.'
       );
       try {
@@ -392,7 +392,7 @@ export function RsvpSection({ copy, lang }: RsvpSectionProps) {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>{isFr ? 'Envoi en cours...' : 'Sending RSVP...'}</span>
+                    <span>{isSw ? 'Inatuma jibu...' : 'Sending RSVP...'}</span>
                   </>
                 ) : (
                   <>
@@ -414,7 +414,7 @@ export function RsvpSection({ copy, lang }: RsvpSectionProps) {
           className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.18em] uppercase text-[#A99295] hover:text-[#C56375] transition-colors cursor-pointer py-1 px-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C96476]/40"
         >
           <Users className="w-3 h-3" />
-          <span>{isFr ? 'Liste des Invités (Hôte)' : 'Host Guest List'}</span>
+          <span>{isSw ? 'Orodha ya Wageni (Mwenyeji)' : 'Host Guest List'}</span>
         </button>
       </div>
 
